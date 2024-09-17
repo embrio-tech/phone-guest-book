@@ -1,13 +1,11 @@
 # Wedding Phone Service
 
 [![Python](https://img.shields.io/static/v1?label=built+with&message=Python+3.11&color=2b5b84)](https://www.python.org/)
+[![embrio.tech](https://img.shields.io/static/v1?label=by&message=EMBRIO.tech&color=24ae5f)](https://embrio.tech)
 
 An app to record audio guest book entries with a retro phone.
 
-
-
-
-## Run on Raspberry Pi as a Service
+## :floppy_disk: Setup for Raspberry Pi as a Service
 
 This section explains how to manage the `wedding-phone.service` using systemctl.
 
@@ -108,3 +106,11 @@ To view the logs of the wedding-phone service, use the following command:
 sudo journalctl -u wedding-phone.service
 ```
 
+## :speech_balloon: Contact
+
+[EMBRIO.tech](https://embrio.tech)  
+[hello@embrio.tech](mailto:hello@embrio.tech)  
+
+## :lock_with_ink_pen: License
+
+The code is licensed under the [MIT License](/LICENSE)
