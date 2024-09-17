@@ -5,6 +5,7 @@ import wave
 import os
 import logging
 import signal
+import threading
 
 class Recorder:
     def __init__(self):
@@ -34,6 +35,37 @@ class Recorder:
         # Set up logging
         logging.basicConfig(level=logging.DEBUG)
 
+        self.intro_file = "intro.wav"
+        self.playing_intro = False
+        self.intro_thread = None
+
+    def play_intro(self):
+        self.playing_intro = True
+        wf = wave.open(self.intro_file, 'rb')
+        p = pyaudio.PyAudio()
+        
+        def callback(in_data, frame_count, time_info, status):
+            data = wf.readframes(frame_count)
+            return (data, pyaudio.paContinue)
+
+        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                        channels=wf.getnchannels(),
+                        rate=wf.getframerate(),
+                        output=True,
+                        output_device_index=1,
+                        stream_callback=callback)
+
+        stream.start_stream()
+
+        while stream.is_active() and self.playing_intro:
+            time.sleep(0.1)
+
+        stream.stop_stream()
+        stream.close()
+        wf.close()
+        p.terminate()
+        self.playing_intro = False
+
     def start_recording(self):
         self.frames = []
         try:
@@ -45,7 +77,7 @@ class Recorder:
                 rate=self.RATE,
                 input=True,
                 frames_per_buffer=self.CHUNK,
-                input_device_index=None,
+                input_device_index=1,
             )
             logging.info("Audio stream successfully initialized")
             if not self.recording:
@@ -55,6 +87,24 @@ class Recorder:
             logging.error(f"Failed to initialize audio stream: {e}")
             self.stream = None
             self.audio = None
+
+    def state_change_callback(self, channel):
+        state = GPIO.input(channel)
+        if state:  # HIGH
+            print("Telephone receiver picked up")
+            self.intro_thread = threading.Thread(target=self.play_intro)
+            self.intro_thread.start()
+            self.intro_thread.join()  # Wait for intro to finish
+            if GPIO.input(channel):  # Check if still HIGH after intro
+                self.start_recording()
+            else:
+                print("Receiver hung up before recording could start")
+        else:  # LOW
+            print("Telephone receiver hung up")
+            self.playing_intro = False  # Stop intro if it's still playing
+            if self.intro_thread and self.intro_thread.is_alive():
+                self.intro_thread.join()  # Wait for intro thread to finish
+            self.stop_recording()
 
     def stop_recording(self):
         if self.recording:
@@ -76,7 +126,7 @@ class Recorder:
                     logging.error("Audio object is None. Unable to save recording.")
                     return
 
-                filename = f"recording_{int(time.time())}.wav"
+                filename = f"/home/wedding/Recordings/recording_{time.strftime('%Y%m%d-%H%M')}.wav"
                 wf = wave.open(filename, "wb")
                 wf.setnchannels(self.CHANNELS)
                 wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
@@ -94,16 +144,6 @@ class Recorder:
                 self.stream = None
         else:
             logging.warning("No frames to save.")
-
-    def state_change_callback(self, channel):
-        state = GPIO.input(channel)
-        if state:  # HIGH
-            print("Telephone receiver picked up")
-            self.start_recording()
-        else:  # LOW
-            print("Telephone receiver hung up")
-            self.stop_recording()
-        
 
     def cleanup(self, signum=None, frame=None):
         print("Cleaning up...")
