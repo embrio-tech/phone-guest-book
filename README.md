@@ -25,7 +25,7 @@ Description=Run Python Script on Boot
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/wedding/Development/gpio-test/run.py
+ExecStart=/usr/bin/python3 /home/wedding/Development/phone-guest-book/run.py
 WorkingDirectory=/home/wedding/Development/gpio-test
 StandardOutput=inherit
 StandardError=inherit
