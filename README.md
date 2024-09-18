@@ -5,6 +5,8 @@
 
 An app to record audio guest book entries with a retro phone.
 
+![IMG_5604](https://github.com/user-attachments/assets/5e0c6cd3-d61c-4838-b0cb-0d804b1aca0c)
+
 ## :floppy_disk: Setup for Raspberry Pi as a Service
 
 This section explains how to manage the `wedding-phone.service` using systemctl.
