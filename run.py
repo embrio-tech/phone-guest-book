@@ -59,6 +59,8 @@ class Recorder:
 
         while stream.is_active() and self.playing_intro:
             time.sleep(0.1)
+            if GPIO.input(self.PIN) == GPIO.LOW:
+                break
 
         stream.stop_stream()
         stream.close()
@@ -126,7 +128,7 @@ class Recorder:
                     logging.error("Audio object is None. Unable to save recording.")
                     return
 
-                filename = f"/home/wedding/Recordings/recording_{time.strftime('%Y%m%d-%H%M')}.wav"
+                filename = f"/home/wedding/Recordings/recording_{time.strftime('%Y%m%d-%H%M%S')}.wav"
                 wf = wave.open(filename, "wb")
                 wf.setnchannels(self.CHANNELS)
                 wf.setsampwidth(self.audio.get_sample_size(self.FORMAT))
